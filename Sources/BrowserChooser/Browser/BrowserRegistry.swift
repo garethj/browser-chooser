@@ -8,7 +8,9 @@ final class BrowserRegistry {
     init(detector: BrowserDetector, profileDetector: ProfileDetector, configBrowsers: [BrowserConfig]) {
         let detected = detector.detectBrowsers()
         var result: [ResolvedBrowser] = []
-        var coveredIDs = Set<String>()
+
+        // Track which bundle IDs have config overrides — suppress auto-detection for those
+        let configuredBundleIDs = Set(configBrowsers.map(\.id))
 
         // Config browsers first — they take priority
         for cb in configBrowsers {
@@ -23,32 +25,28 @@ final class BrowserRegistry {
                 profileDirectory: cb.profile
             )
             result.append(browser)
-            coveredIDs.insert(browser.id)
             logger.debug("Added config browser: \(cb.name)")
         }
 
-        // Auto-detected browsers that aren't already covered
+        // Auto-detected browsers — skip any bundle ID that has config entries
         for db in detected {
+            if configuredBundleIDs.contains(db.bundleID) {
+                logger.debug("Skipping auto-detected \(db.bundleID) — overridden by config")
+                continue
+            }
+
             let profiles = profileDetector.profiles(forBundleID: db.bundleID)
 
             if profiles.isEmpty {
-                let browser = ResolvedBrowser(name: db.name, bundleID: db.bundleID, icon: db.icon)
-                if !coveredIDs.contains(browser.id) {
-                    result.append(browser)
-                    coveredIDs.insert(browser.id)
-                }
+                result.append(ResolvedBrowser(name: db.name, bundleID: db.bundleID, icon: db.icon))
             } else {
                 for profile in profiles {
-                    let browser = ResolvedBrowser(
+                    result.append(ResolvedBrowser(
                         name: "\(db.name) — \(profile.displayName)",
                         bundleID: db.bundleID,
                         icon: db.icon,
                         profileDirectory: profile.directory
-                    )
-                    if !coveredIDs.contains(browser.id) {
-                        result.append(browser)
-                        coveredIDs.insert(browser.id)
-                    }
+                    ))
                 }
             }
         }

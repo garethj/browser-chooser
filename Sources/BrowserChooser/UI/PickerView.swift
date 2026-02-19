@@ -3,10 +3,10 @@ import SwiftUI
 struct PickerView: View {
     let browsers: [ResolvedBrowser]
     let url: URL
+    let selectedIndex: Int
     let onSelect: (ResolvedBrowser) -> Void
     let onDismiss: () -> Void
 
-    @State private var selectedIndex = 0
     @State private var hoveredIndex: Int?
 
     var body: some View {
@@ -28,58 +28,26 @@ struct PickerView: View {
             ForEach(Array(browsers.enumerated()), id: \.element.id) { index, browser in
                 BrowserRow(
                     browser: browser,
-                    isSelected: index == selectedIndex,
-                    isHovered: index == hoveredIndex,
+                    isSelected: hoveredIndex == nil ? index == selectedIndex : index == hoveredIndex,
                     shortcutKey: index < 9 ? "\(index + 1)" : nil
                 )
                 .onTapGesture {
                     onSelect(browser)
                 }
                 .onHover { hovering in
-                    if hovering {
-                        hoveredIndex = index
-                        selectedIndex = index
-                    } else {
-                        hoveredIndex = nil
-                    }
+                    hoveredIndex = hovering ? index : nil
                 }
             }
         }
         .padding(.vertical, 6)
         .frame(width: 280)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
-        .onKeyPress(.upArrow) {
-            selectedIndex = max(0, selectedIndex - 1)
-            return .handled
-        }
-        .onKeyPress(.downArrow) {
-            selectedIndex = min(browsers.count - 1, selectedIndex + 1)
-            return .handled
-        }
-        .onKeyPress(.return) {
-            if browsers.indices.contains(selectedIndex) {
-                onSelect(browsers[selectedIndex])
-            }
-            return .handled
-        }
-        .onKeyPress(.escape) {
-            onDismiss()
-            return .handled
-        }
-        .onKeyPress(characters: .decimalDigits) { keyPress in
-            if let digit = Int(keyPress.characters), digit >= 1, digit <= browsers.count {
-                onSelect(browsers[digit - 1])
-                return .handled
-            }
-            return .ignored
-        }
     }
 }
 
 private struct BrowserRow: View {
     let browser: ResolvedBrowser
     let isSelected: Bool
-    let isHovered: Bool
     let shortcutKey: String?
 
     var body: some View {

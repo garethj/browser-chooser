@@ -3,6 +3,7 @@ import os
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let logger = Logger(subsystem: "com.garethj.BrowserChooser", category: "AppDelegate")
+    let configManager = ConfigManager()
     var urlHandler: URLHandler?
     private var pendingURLs: [URL] = []
 
@@ -13,6 +14,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             forEventClass: AEEventClass(kInternetEventClass),
             andEventID: AEEventID(kAEGetURL)
         )
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        rebuildURLHandler()
+    }
+
+    func rebuildURLHandler() {
+        let registry = BrowserRegistry(
+            detector: BrowserDetector(),
+            profileDetector: ProfileDetector(),
+            configBrowsers: configManager.config.browsers
+        )
+        let matcher = URLMatcher()
+        let launcher = BrowserLauncher()
+        let pickerController = PickerController()
+
+        let handler = URLHandler(
+            config: configManager.config,
+            registry: registry,
+            matcher: matcher,
+            launcher: launcher,
+            pickerController: pickerController
+        )
+        urlHandler = handler
+        flushPendingURLs()
     }
 
     @objc private func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
@@ -26,13 +52,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let handler = urlHandler {
             handler.handle(url: url)
         } else {
-            // URL arrived before handler was set up — queue it
             logger.info("URL handler not ready, queueing URL")
             pendingURLs.append(url)
         }
     }
 
-    /// Called by the app when the URL handler is ready; flushes any queued URLs.
     func flushPendingURLs() {
         guard let handler = urlHandler else { return }
         for url in pendingURLs {
