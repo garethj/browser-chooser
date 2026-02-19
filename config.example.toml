@@ -1,0 +1,44 @@
+# BrowserChooser Configuration
+# Copy this file to ~/.config/browser-chooser/config.toml
+# The app auto-reloads when you save changes.
+
+[defaults]
+# Default action when no rule matches.
+# Use "ask" to show a picker, or a browser name like "Safari".
+browser = "ask"
+
+# Override display names or add Chromium profile entries.
+# The "id" is the macOS bundle identifier for the browser.
+# Common bundle IDs:
+#   Safari:  com.apple.Safari
+#   Chrome:  com.google.Chrome
+#   Firefox: org.mozilla.firefox
+#   Brave:   com.brave.Browser
+#   Edge:    com.microsoft.edgemac
+#   Arc:     company.thebrowser.Browser
+
+[[browsers]]
+name = "Chrome Work"
+id = "com.google.Chrome"
+profile = "Default"
+
+[[browsers]]
+name = "Chrome Personal"
+id = "com.google.Chrome"
+profile = "Profile 1"
+
+# Rules are evaluated top-to-bottom; first match wins.
+# Patterns match against the URL host (or host+path if the pattern contains /).
+# Supports glob syntax: * (any chars), ? (one char), [abc] (character class).
+
+[[rules]]
+pattern = "*.notion.so"
+browser = "Chrome Work"
+
+[[rules]]
+pattern = "*.github.com"
+browser = "Chrome Personal"
+
+[[rules]]
+pattern = "*.google.com"
+browser = "ask"
