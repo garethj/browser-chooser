@@ -14,6 +14,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             forEventClass: AEEventClass(kInternetEventClass),
             andEventID: AEEventID(kAEGetURL)
         )
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleOpenDocumentEvent(_:withReplyEvent:)),
+            forEventClass: AEEventClass(kCoreEventClass),
+            andEventID: AEEventID(kAEOpenDocuments)
+        )
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -39,6 +45,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         urlHandler = handler
         flushPendingURLs()
+    }
+
+    @objc private func handleOpenDocumentEvent(_ event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
+        guard let listDescriptor = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)) else {
+            logger.error("Received invalid open document event")
+            return
+        }
+
+        let count = listDescriptor.numberOfItems
+        guard count > 0 else { return }
+
+        for i in 1...count {
+            guard let itemDescriptor = listDescriptor.atIndex(i),
+                  let urlData = itemDescriptor.coerce(toDescriptorType: typeFileURL)?.data,
+                  let urlString = String(data: urlData, encoding: .utf8),
+                  let url = URL(string: urlString) else {
+                logger.warning("Could not extract file URL from descriptor at index \(i)")
+                continue
+            }
+
+            logger.info("Received file: \(url.path)")
+            if let handler = urlHandler {
+                handler.handle(url: url)
+            } else {
+                logger.info("URL handler not ready, queueing file URL")
+                pendingURLs.append(url)
+            }
+        }
     }
 
     @objc private func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
