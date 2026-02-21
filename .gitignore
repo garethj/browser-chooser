@@ -5,3 +5,10 @@ Package.resolved
 xcuserdata/
 DerivedData/
 .DS_Store
+
+# Environment files
+.env
+.env.*
+
+# Claude
+.claude/settings.local.json
