@@ -31,6 +31,7 @@ final class BrowserLauncher {
             }
         } else {
             let config = NSWorkspace.OpenConfiguration()
+            config.activates = true
             NSWorkspace.shared.open(
                 [url],
                 withApplicationAt: appURL,
