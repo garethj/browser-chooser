@@ -96,15 +96,15 @@ final class ConfigManager {
 
     # Rules are evaluated top-to-bottom; first match wins.
     # Patterns match against the URL host (or host+path if the pattern contains /).
-    # Uncomment and edit these examples:
+    #
+    # Use "pattern" for a single domain or "patterns" for multiple domains:
     #
     # [[rules]]
-    # pattern = "*.notion.so"
+    # patterns = [
+    #     "*.notion.so", "*.github.com",
+    #     "*.slack.com",
+    # ]
     # browser = "Chrome Work"
-    #
-    # [[rules]]
-    # pattern = "*.github.com"
-    # browser = "Chrome Personal"
     #
     # [[rules]]
     # pattern = "*.google.com"

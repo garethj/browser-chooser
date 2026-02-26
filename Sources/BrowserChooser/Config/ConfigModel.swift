@@ -34,6 +34,13 @@ struct BrowserConfig: Codable, Equatable {
 }
 
 struct RuleConfig: Codable, Equatable {
-    var pattern: String
+    var pattern: String?
+    var patterns: [String]?
     var browser: String
+
+    var allPatterns: [String] {
+        if let patterns { return patterns }
+        if let pattern { return [pattern] }
+        return []
+    }
 }

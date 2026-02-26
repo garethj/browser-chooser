@@ -11,4 +11,5 @@ DerivedData/
 .env.*
 
 # Claude
-.claude/settings.local.json
+.claude/
+CLAUDE.md

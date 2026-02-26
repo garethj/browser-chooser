@@ -43,10 +43,15 @@ name = "Chrome Personal"
 id = "com.google.Chrome"
 profile = "Profile 1"
 
+# Route multiple domains to the same browser in one rule
 [[rules]]
-pattern = "*.notion.so"
+patterns = [
+    "*.notion.so", "*.hibob.com",
+    "*.okta.com", "*.slack.com",
+]
 browser = "Chrome Work"
 
+# Or use a single pattern per rule
 [[rules]]
 pattern = "*.github.com"
 browser = "Chrome Personal"
@@ -72,8 +77,11 @@ Browsers installed on your Mac are auto-detected. You only need `[[browsers]]` e
 
 | Field | Description |
 |-------|-------------|
-| `pattern` | Glob pattern. Without `/`, matches hostname only. With `/`, matches hostname + path |
+| `pattern` | Single glob pattern |
+| `patterns` | Array of glob patterns (use instead of `pattern` to group multiple domains) |
 | `browser` | Browser name or `"ask"` to show the picker |
+
+Each rule needs either `pattern` or `patterns` (not both). Without `/`, patterns match hostname only. With `/`, they match hostname + path.
 
 Pattern examples: `*.example.com` (any subdomain), `example.com/docs/*` (path matching), `?oogle.com` (single-character wildcard).
 

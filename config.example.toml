@@ -30,9 +30,15 @@ profile = "Profile 1"
 # Rules are evaluated top-to-bottom; first match wins.
 # Patterns match against the URL host (or host+path if the pattern contains /).
 # Supports glob syntax: * (any chars), ? (one char), [abc] (character class).
+#
+# Use "patterns" (array) to route multiple domains in one rule,
+# or "pattern" (string) for a single domain.
 
 [[rules]]
-pattern = "*.notion.so"
+patterns = [
+    "*.notion.so", "*.hibob.com",
+    "*.okta.com", "*.slack.com",
+]
 browser = "Chrome Work"
 
 [[rules]]

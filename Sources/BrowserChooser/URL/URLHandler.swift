@@ -20,10 +20,12 @@ final class URLHandler {
     func handle(url: URL) {
         // Evaluate rules top-to-bottom
         for rule in config.rules {
-            if matcher.matches(url: url, pattern: rule.pattern) {
-                logger.info("Rule matched: \(rule.pattern) → \(rule.browser)")
-                route(url: url, browserName: rule.browser)
-                return
+            for pattern in rule.allPatterns {
+                if matcher.matches(url: url, pattern: pattern) {
+                    logger.info("Rule matched: \(pattern) → \(rule.browser)")
+                    route(url: url, browserName: rule.browser)
+                    return
+                }
             }
         }
 

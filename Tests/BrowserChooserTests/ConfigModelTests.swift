@@ -105,4 +105,72 @@ struct ConfigModelTests {
 
         #expect(config1 == config2)
     }
+
+    @Test("Rule with patterns array decodes correctly")
+    func patternsArray() throws {
+        let toml = """
+        [defaults]
+        browser = "ask"
+
+        [[rules]]
+        patterns = ["*.notion.so", "*.hibob.com", "*.okta.com"]
+        browser = "Chrome Work"
+        """
+
+        let config = try TOMLDecoder().decode(AppConfig.self, from: toml)
+
+        #expect(config.rules.count == 1)
+        #expect(config.rules[0].pattern == nil)
+        #expect(config.rules[0].patterns == ["*.notion.so", "*.hibob.com", "*.okta.com"])
+        #expect(config.rules[0].allPatterns == ["*.notion.so", "*.hibob.com", "*.okta.com"])
+    }
+
+    @Test("Rule with singular pattern returns it from allPatterns")
+    func singularPatternAllPatterns() throws {
+        let toml = """
+        [defaults]
+        browser = "ask"
+
+        [[rules]]
+        pattern = "*.github.com"
+        browser = "Safari"
+        """
+
+        let config = try TOMLDecoder().decode(AppConfig.self, from: toml)
+
+        #expect(config.rules[0].allPatterns == ["*.github.com"])
+    }
+
+    @Test("Rule with neither pattern nor patterns returns empty allPatterns")
+    func noPatternReturnsEmpty() {
+        let rule = RuleConfig(browser: "Safari")
+        #expect(rule.allPatterns.isEmpty)
+    }
+
+    @Test("Mixed singular and array rules decode together")
+    func mixedRules() throws {
+        let toml = """
+        [defaults]
+        browser = "ask"
+
+        [[rules]]
+        pattern = "*.github.com"
+        browser = "Safari"
+
+        [[rules]]
+        patterns = ["*.notion.so", "*.hibob.com"]
+        browser = "Chrome Work"
+
+        [[rules]]
+        pattern = "*.google.com"
+        browser = "ask"
+        """
+
+        let config = try TOMLDecoder().decode(AppConfig.self, from: toml)
+
+        #expect(config.rules.count == 3)
+        #expect(config.rules[0].allPatterns == ["*.github.com"])
+        #expect(config.rules[1].allPatterns == ["*.notion.so", "*.hibob.com"])
+        #expect(config.rules[2].allPatterns == ["*.google.com"])
+    }
 }
