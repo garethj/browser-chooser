@@ -58,4 +58,38 @@ final class BrowserRegistry {
     func browser(named name: String) -> ResolvedBrowser? {
         browsers.first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }
     }
+
+    static func validationWarnings(
+        config: AppConfig,
+        knownBrowserNames: Set<String>,
+        profilesByBundleID: [String: [ChromiumProfile]]
+    ) -> [String] {
+        var warnings: [String] = []
+
+        for cb in config.browsers {
+            guard let profile = cb.profile,
+                  let profiles = profilesByBundleID[cb.id],
+                  !profiles.isEmpty,
+                  !profiles.contains(where: { $0.directory == profile }) else { continue }
+
+            let available = profiles.map { "\($0.directory) (\($0.displayName))" }.joined(separator: ", ")
+            warnings.append("Browser '\(cb.name)' references profile '\(profile)', which doesn't exist. Available profiles: \(available).")
+        }
+
+        if config.defaults.browser.lowercased() != "ask",
+           !knownBrowserNames.contains(config.defaults.browser.lowercased()) {
+            warnings.append("Default browser '\(config.defaults.browser)' does not match any configured or detected browser.")
+        }
+
+        for rule in config.rules {
+            if rule.allPatterns.isEmpty {
+                warnings.append("A rule has no pattern set and will never match (browser: '\(rule.browser)').")
+            } else if rule.browser.lowercased() != "ask",
+                      !knownBrowserNames.contains(rule.browser.lowercased()) {
+                warnings.append("Rule for pattern(s) \(rule.allPatterns.joined(separator: ", ")) references unknown browser '\(rule.browser)'.")
+            }
+        }
+
+        return warnings
+    }
 }

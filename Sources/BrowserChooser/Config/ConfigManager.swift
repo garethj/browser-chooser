@@ -9,6 +9,7 @@ final class ConfigManager {
 
     private(set) var config: AppConfig = AppConfig()
     private(set) var lastError: String?
+    private(set) var warnings: [String] = []
 
     static let configDirectory: URL = {
         FileManager.default.homeDirectoryForCurrentUser
@@ -57,6 +58,10 @@ final class ConfigManager {
         } catch {
             logger.error("Failed to create default config: \(error.localizedDescription)")
         }
+    }
+
+    func setWarnings(_ warnings: [String]) {
+        self.warnings = warnings
     }
 
     func openConfigInEditor() {

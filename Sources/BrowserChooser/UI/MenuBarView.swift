@@ -11,6 +11,15 @@ struct MenuBarView: View {
             Divider()
         }
 
+        if !configManager.warnings.isEmpty {
+            Label("Config Warnings", systemImage: "exclamationmark.circle")
+            ForEach(configManager.warnings, id: \.self) { warning in
+                Text(warning)
+                    .font(.caption)
+            }
+            Divider()
+        }
+
         Button("Open Config…") {
             configManager.openConfigInEditor()
         }

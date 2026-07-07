@@ -27,11 +27,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func rebuildURLHandler() {
+        let profileDetector = ProfileDetector()
         let registry = BrowserRegistry(
             detector: BrowserDetector(),
-            profileDetector: ProfileDetector(),
+            profileDetector: profileDetector,
             configBrowsers: configManager.config.browsers
         )
+
+        var profilesByBundleID: [String: [ChromiumProfile]] = [:]
+        for cb in configManager.config.browsers where cb.profile != nil {
+            profilesByBundleID[cb.id] = profileDetector.profiles(forBundleID: cb.id)
+        }
+        let knownNames = Set(registry.browsers.map { $0.name.lowercased() })
+        configManager.setWarnings(
+            BrowserRegistry.validationWarnings(
+                config: configManager.config,
+                knownBrowserNames: knownNames,
+                profilesByBundleID: profilesByBundleID
+            )
+        )
+
         let matcher = URLMatcher()
         let launcher = BrowserLauncher()
         let pickerController = PickerController()
