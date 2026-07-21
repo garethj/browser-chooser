@@ -23,7 +23,7 @@ Requires macOS 14 (Sonoma) or later.
 make install
 ```
 
-This builds the app, copies it to `/Applications`, and launches it. Then set BrowserChooser as your default browser in **System Settings > Desktop & Dock > Default web browser**.
+This builds the app, copies it to `/Applications`, installs a login item so it starts automatically at login, and launches it. Since macOS doesn't let apps set themselves as the default browser silently, it also opens **System Settings > Desktop & Dock** for you — pick BrowserChooser as your default web browser there.
 
 ## Configuration
 
@@ -57,7 +57,7 @@ pattern = "*.github.com"
 browser = "Chrome Personal"
 ```
 
-The app watches this file and reloads automatically when you save changes.
+The app watches this file and reloads automatically when you save changes. If a browser references a Chromium profile that doesn't exist, a rule references an unknown browser, or the default browser doesn't match anything configured or detected, BrowserChooser shows a "Config Warnings" section in the menu bar dropdown instead of failing silently.
 
 ### Config reference
 
