@@ -27,6 +27,15 @@ name = "Chrome Personal"
 id = "com.google.Chrome"
 profile = "Profile 1"
 
+# Firefox profiles: "profile" is the profile's folder name under
+# ~/Library/Application Support/Firefox/Profiles/ (not the display name shown
+# in about:profiles). Find it with:
+#   ls ~/Library/Application\ Support/Firefox/Profiles/
+[[browsers]]
+name = "Firefox Personal"
+id = "org.mozilla.firefox"
+profile = "6eov930b.default-release"
+
 # Rules are evaluated top-to-bottom; first match wins.
 # Patterns match against the URL host (or host+path if the pattern contains /).
 # Supports glob syntax: * (any chars), ? (one char), [abc] (character class).

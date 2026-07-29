@@ -34,7 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             configBrowsers: configManager.config.browsers
         )
 
-        var profilesByBundleID: [String: [ChromiumProfile]] = [:]
+        var profilesByBundleID: [String: [BrowserProfile]] = [:]
         for cb in configManager.config.browsers where cb.profile != nil {
             profilesByBundleID[cb.id] = profileDetector.profiles(forBundleID: cb.id)
         }

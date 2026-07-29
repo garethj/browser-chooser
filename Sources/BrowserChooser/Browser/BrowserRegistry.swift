@@ -62,7 +62,7 @@ final class BrowserRegistry {
     static func validationWarnings(
         config: AppConfig,
         knownBrowserNames: Set<String>,
-        profilesByBundleID: [String: [ChromiumProfile]]
+        profilesByBundleID: [String: [BrowserProfile]]
     ) -> [String] {
         var warnings: [String] = []
 

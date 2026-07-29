@@ -14,7 +14,7 @@ struct BrowserRegistryValidationTests {
         let warnings = BrowserRegistry.validationWarnings(
             config: config,
             knownBrowserNames: ["chrome work"],
-            profilesByBundleID: ["com.google.Chrome": [ChromiumProfile(directory: "Default", displayName: "Gareth")]]
+            profilesByBundleID: ["com.google.Chrome": [BrowserProfile(directory: "Default", displayName: "Gareth")]]
         )
 
         #expect(warnings.isEmpty)
@@ -31,8 +31,8 @@ struct BrowserRegistryValidationTests {
             knownBrowserNames: ["chrome - henry beaufort"],
             profilesByBundleID: [
                 "com.google.Chrome": [
-                    ChromiumProfile(directory: "Default", displayName: "Gareth"),
-                    ChromiumProfile(directory: "Profile 2", displayName: "HB"),
+                    BrowserProfile(directory: "Default", displayName: "Gareth"),
+                    BrowserProfile(directory: "Profile 2", displayName: "HB"),
                 ]
             ]
         )

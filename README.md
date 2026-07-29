@@ -43,6 +43,11 @@ name = "Chrome Personal"
 id = "com.google.Chrome"
 profile = "Profile 1"
 
+[[browsers]]
+name = "Firefox Personal"
+id = "org.mozilla.firefox"
+profile = "6eov930b.default-release"   # folder name under Firefox's Profiles/ dir
+
 # Route multiple domains to the same browser in one rule
 [[rules]]
 patterns = [
@@ -57,21 +62,26 @@ pattern = "*.github.com"
 browser = "Chrome Personal"
 ```
 
-The app watches this file and reloads automatically when you save changes. If a browser references a Chromium profile that doesn't exist, a rule references an unknown browser, or the default browser doesn't match anything configured or detected, BrowserChooser shows a "Config Warnings" section in the menu bar dropdown instead of failing silently.
+The app watches this file and reloads automatically when you save changes. If a browser references a profile that doesn't exist, a rule references an unknown browser, or the default browser doesn't match anything configured or detected, BrowserChooser shows a "Config Warnings" section in the menu bar dropdown instead of failing silently.
 
 ### Config reference
 
 **`[defaults]`** — `browser`: the browser name (or `"ask"`) to use when no rule matches.
 
-**`[[browsers]]`** — defines browsers and Chromium profiles:
+**`[[browsers]]`** — defines browsers and their profiles:
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Display name, referenced in rules |
 | `id` | Yes | macOS bundle identifier (e.g. `com.apple.Safari`) |
-| `profile` | No | Chromium profile directory (e.g. `"Default"`, `"Profile 1"`) |
+| `profile` | No | Profile identifier — meaning depends on the browser, see below |
 
-Browsers installed on your Mac are auto-detected. You only need `[[browsers]]` entries for Chromium profiles or to override names.
+Browsers installed on your Mac are auto-detected, including their profiles — you only need `[[browsers]]` entries to override names or scope rules to a specific profile.
+
+`profile` means different things depending on the browser family:
+
+- **Chromium** (Chrome, Brave, Edge, Vivaldi, Arc): the profile directory name, e.g. `"Default"`, `"Profile 1"` — read from the browser's `Local State` file.
+- **Firefox**: the profile's folder name under `~/Library/Application Support/Firefox/Profiles/`, e.g. `"6eov930b.default-release"` — find it with `ls ~/Library/Application\ Support/Firefox/Profiles/`, or omit `profile` and let auto-detection list your profiles by their display name in the menu bar picker. Profiles created via Firefox's newer multi-profile panel work too, but since they aren't registered in `profiles.ini`, BrowserChooser falls back to showing their folder name instead of the friendly name you gave them in Firefox.
 
 **`[[rules]]`** — evaluated top to bottom, first match wins:
 
@@ -100,4 +110,4 @@ make clean       # remove build artifacts
 
 Swift + SwiftUI menu bar app (no Dock icon). URLs arrive as Apple Events and route through pattern-matching rules to the target browser. Local HTML files are handled the same way.
 
-Browser discovery queries NSWorkspace for installed apps that handle both `https://` URLs and `public.html`. Chromium profiles are read from each browser's `Local State` JSON.
+Browser discovery queries NSWorkspace for installed apps that handle both `https://` URLs and `public.html`. Chromium profiles are read from each browser's `Local State` JSON; Firefox profiles are read from `profiles.ini` and the `Profiles/` directory.

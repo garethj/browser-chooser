@@ -12,16 +12,21 @@ final class BrowserLauncher {
         }
 
         if let profileDir = browser.profileDirectory {
-            // Use `open` command for Chromium profiles — NSWorkspace.OpenConfiguration
+            // Use `open` command for profile-specific launches — NSWorkspace.OpenConfiguration
             // arguments are ignored when the app is already running.
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = [
-                "-na", appURL.path,
-                "--args",
-                "--profile-directory=\(profileDir)",
-                url.absoluteString,
-            ]
+
+            let profileArgs: [String]
+            if let geckoProfilesDir = ProfileDetector.geckoProfilesDirectory(forBundleID: browser.bundleID) {
+                // Firefox family: -profile takes an absolute path, not a bare name.
+                profileArgs = ["-profile", geckoProfilesDir.appendingPathComponent(profileDir).path]
+            } else {
+                // Chromium family: --profile-directory takes the profile's bare directory name.
+                profileArgs = ["--profile-directory=\(profileDir)"]
+            }
+
+            process.arguments = ["-na", appURL.path, "--args"] + profileArgs + [url.absoluteString]
             do {
                 try process.run()
                 logger.info("Opened \(url.absoluteString) in \(browser.name) via open -na")
