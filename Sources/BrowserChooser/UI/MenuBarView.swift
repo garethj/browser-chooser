@@ -42,6 +42,10 @@ struct MenuBarView: View {
         }
         .keyboardShortcut("r", modifiers: .command)
 
+        Button("Add Detected Browsers to Config") {
+            configManager.addDetectedBrowsers()
+        }
+
         Divider()
 
         Button("Quit BrowserChooser") {

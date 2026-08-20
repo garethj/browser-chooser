@@ -27,7 +27,7 @@ This builds the app, copies it to `/Applications`, installs a login item so it s
 
 ## Configuration
 
-Create `~/.config/browser-chooser/config.toml`:
+BrowserChooser writes `~/.config/browser-chooser/config.toml` for you the first time it runs, pre-filled with a `[[browsers]]` entry for every browser (and Chrome/Firefox profile) it finds on your Mac — no need to hand-create it or look up bundle IDs yourself. From there, edit it directly:
 
 ```toml
 [defaults]
@@ -76,7 +76,13 @@ The app watches this file and reloads automatically when you save changes. If a 
 | `id` | Yes | macOS bundle identifier (e.g. `com.apple.Safari`) |
 | `profile` | No | Profile identifier — meaning depends on the browser, see below |
 
-Browsers installed on your Mac are auto-detected, including their profiles — you only need `[[browsers]]` entries to override names or scope rules to a specific profile.
+Browsers installed on your Mac are auto-detected, including their profiles — you only need `[[browsers]]` entries to override names or scope rules to a specific profile. If you install a new browser (or create a new profile) later, pick **Add Detected Browsers to Config** from the menu bar dropdown to append its entry to your existing config, or run:
+
+```bash
+make list-browsers
+```
+
+to print detected browsers/profiles as `[[browsers]]` blocks without touching the file. Both skip anything whose bundle ID is already referenced in your config, so existing entries and rules are never touched.
 
 `profile` means different things depending on the browser family:
 
@@ -103,6 +109,7 @@ make bundle      # build + assemble .app bundle + codesign
 make install     # bundle + copy to /Applications + launch
 make test        # swift test
 make run         # bundle + run from build directory
+make list-browsers # bundle + print detected browsers/profiles as [[browsers]] TOML
 make clean       # remove build artifacts
 ```
 

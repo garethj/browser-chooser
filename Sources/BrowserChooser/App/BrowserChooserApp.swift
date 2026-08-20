@@ -4,6 +4,13 @@ import SwiftUI
 struct BrowserChooserApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    init() {
+        if CommandLine.arguments.contains(CLI.listBrowsersFlag) {
+            CLI.listBrowsers()
+            exit(0)
+        }
+    }
+
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(configManager: appDelegate.configManager)

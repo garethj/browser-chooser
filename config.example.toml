@@ -27,6 +27,10 @@ name = "Chrome Personal"
 id = "com.google.Chrome"
 profile = "Profile 1"
 
+[[browsers]]
+name = "Safari"
+id = "com.apple.Safari"
+
 # Firefox profiles: "profile" is the profile's folder name under
 # ~/Library/Application Support/Firefox/Profiles/ (not the display name shown
 # in about:profiles). Find it with:

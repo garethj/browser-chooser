@@ -1,4 +1,4 @@
-.PHONY: build bundle install clean run test
+.PHONY: build bundle install clean run test list-browsers
 
 build:
 	swift build -c release
@@ -18,3 +18,6 @@ run: bundle
 
 test:
 	swift test
+
+list-browsers: bundle
+	.build/BrowserChooser.app/Contents/MacOS/BrowserChooser --list-browsers
