@@ -1,5 +1,17 @@
 import SwiftUI
 
+enum MenuBarIcon {
+    static func systemImageName(lastError: String?, warnings: [String]) -> String {
+        if lastError != nil {
+            return "exclamationmark.triangle.fill"
+        }
+        if !warnings.isEmpty {
+            return "exclamationmark.circle.fill"
+        }
+        return "globe"
+    }
+}
+
 struct MenuBarView: View {
     let configManager: ConfigManager
 
