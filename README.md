@@ -1,6 +1,6 @@
 # BrowserChooser
 
-A macOS menu bar app that routes URLs to different browsers based on rules you define. Set it as your default browser, and every link you click gets sent to the right place.
+A macOS app that routes URLs to different browsers based on rules you define. Set it as your default browser, and every link you click gets sent to the right place.
 
 ## Why
 
@@ -24,6 +24,14 @@ make install
 ```
 
 This builds the app, copies it to `/Applications`, installs a login item so it starts automatically at login, and launches it. Since macOS doesn't let apps set themselves as the default browser silently, it also opens **System Settings > Desktop & Dock** for you — pick BrowserChooser as your default web browser there.
+
+## Menu bar and window
+
+BrowserChooser runs in the background and shows a globe icon in the menu bar. The menu has the config actions (Open Config, Reload Config, Add Detected Browsers to Config) and lists any config errors or warnings.
+
+Opening the app yourself (from Finder, Spotlight or `open -a BrowserChooser`) shows a window with the same actions and status, whether or not it was already running. Launches caused by clicking a link stay silent and just route the URL, and so does the login item, which starts the app with `--background`.
+
+To drop the menu bar icon, untick **Show in Menu Bar** in the menu or **Show in menu bar** in the window. The app keeps running and routing links, and opening it again brings the window back. While the window is open the app gets a Dock icon; closing the window removes it.
 
 ## Configuration
 
@@ -62,7 +70,7 @@ pattern = "*.github.com"
 browser = "Chrome Personal"
 ```
 
-The app watches this file and reloads automatically when you save changes. If a browser references a profile that doesn't exist, a rule references an unknown browser, or the default browser doesn't match anything configured or detected, BrowserChooser shows a "Config Warnings" section in the menu bar dropdown instead of failing silently.
+The app watches this file and reloads automatically when you save changes. If a browser references a profile that doesn't exist, a rule references an unknown browser, or the default browser doesn't match anything configured or detected, BrowserChooser shows a "Config Warnings" section in the menu bar dropdown and the app window instead of failing silently.
 
 ### Config reference
 
@@ -76,7 +84,7 @@ The app watches this file and reloads automatically when you save changes. If a 
 | `id` | Yes | macOS bundle identifier (e.g. `com.apple.Safari`) |
 | `profile` | No | Profile identifier — meaning depends on the browser, see below |
 
-Browsers installed on your Mac are auto-detected, including their profiles — you only need `[[browsers]]` entries to override names or scope rules to a specific profile. If you install a new browser (or create a new profile) later, pick **Add Detected Browsers to Config** from the menu bar dropdown to append its entry to your existing config, or run:
+Browsers installed on your Mac are auto-detected, including their profiles — you only need `[[browsers]]` entries to override names or scope rules to a specific profile. If you install a new browser (or create a new profile) later, pick **Add Detected Browsers to Config** from the menu bar dropdown or the app window to append its entry to your existing config, or run:
 
 ```bash
 make list-browsers
@@ -115,6 +123,6 @@ make clean       # remove build artifacts
 
 ## How it's built
 
-Swift + SwiftUI menu bar app (no Dock icon). URLs arrive as Apple Events and route through pattern-matching rules to the target browser. Local HTML files are handled the same way.
+Swift + SwiftUI background app (`LSUIElement`), with an optional menu bar icon and a window that switches it to a regular app with a Dock icon while it's open. URLs arrive as Apple Events and route through pattern-matching rules to the target browser. Local HTML files are handled the same way.
 
 Browser discovery queries NSWorkspace for installed apps that handle both `https://` URLs and `public.html`. Chromium profiles are read from each browser's `Local State` JSON; Firefox profiles are read from `profiles.ini` and the `Profiles/` directory.

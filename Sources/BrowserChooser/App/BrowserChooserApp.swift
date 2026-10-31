@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct BrowserChooserApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @AppStorage(LaunchBehavior.showInMenuBarKey) private var showInMenuBar = true
 
     init() {
         if CommandLine.arguments.contains(CLI.listBrowsersFlag) {
@@ -12,8 +13,11 @@ struct BrowserChooserApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra {
-            MenuBarView(configManager: appDelegate.configManager)
+        MenuBarExtra(isInserted: $showInMenuBar) {
+            MenuBarView(
+                configManager: appDelegate.configManager,
+                onOpenWindow: { appDelegate.showMainWindow() }
+            )
         } label: {
             Image(systemName: MenuBarIcon.systemImageName(
                 lastError: appDelegate.configManager.lastError,

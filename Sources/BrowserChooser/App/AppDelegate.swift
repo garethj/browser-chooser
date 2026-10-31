@@ -6,6 +6,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let configManager = ConfigManager()
     var urlHandler: URLHandler?
     private var pendingURLs: [URL] = []
+    private var hasFinishedLaunching = false
+    private var receivedURLDuringLaunch = false
+    lazy var mainWindowController = MainWindowController(configManager: configManager)
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSAppleEventManager.shared().setEventHandler(
@@ -23,7 +26,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        hasFinishedLaunching = true
         rebuildURLHandler()
+
+        let launchIsDefault = (notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool) ?? true
+        if LaunchBehavior.shouldShowWindowOnLaunch(
+            arguments: CommandLine.arguments,
+            launchIsDefault: launchIsDefault,
+            receivedURLDuringLaunch: receivedURLDuringLaunch
+        ) {
+            showMainWindow()
+        }
+    }
+
+    /// Called when the app is opened again while already running (Finder, Spotlight, `open -a`).
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showMainWindow()
+        return false
+    }
+
+    func showMainWindow() {
+        mainWindowController.show()
     }
 
     func rebuildURLHandler() {
@@ -81,6 +104,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             logger.info("Received file: \(url.path)")
+            if !hasFinishedLaunching { receivedURLDuringLaunch = true }
             if let handler = urlHandler {
                 handler.handle(url: url)
             } else {
@@ -97,6 +121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         logger.info("Received URL: \(urlString)")
+        if !hasFinishedLaunching { receivedURLDuringLaunch = true }
 
         if let handler = urlHandler {
             handler.handle(url: url)

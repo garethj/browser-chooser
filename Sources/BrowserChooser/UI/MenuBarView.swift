@@ -14,6 +14,8 @@ enum MenuBarIcon {
 
 struct MenuBarView: View {
     let configManager: ConfigManager
+    let onOpenWindow: () -> Void
+    @AppStorage(LaunchBehavior.showInMenuBarKey) private var showInMenuBar = true
 
     var body: some View {
         if let error = configManager.lastError {
@@ -45,6 +47,14 @@ struct MenuBarView: View {
         Button("Add Detected Browsers to Config") {
             configManager.addDetectedBrowsers()
         }
+
+        Divider()
+
+        Button("Open BrowserChooser Window…") {
+            onOpenWindow()
+        }
+
+        Toggle("Show in Menu Bar", isOn: $showInMenuBar)
 
         Divider()
 

@@ -33,6 +33,7 @@ cat > "$LAUNCH_AGENT_PLIST" <<EOF
     <key>ProgramArguments</key>
     <array>
         <string>$INSTALL_DIR/$APP_NAME.app/Contents/MacOS/$APP_NAME</string>
+        <string>--background</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
