@@ -1,4 +1,4 @@
-.PHONY: build bundle install clean run test list-browsers
+.PHONY: build bundle install clean run test list-browsers icon
 
 build:
 	swift build -c release
@@ -21,3 +21,6 @@ test:
 
 list-browsers: bundle
 	.build/BrowserChooser.app/Contents/MacOS/BrowserChooser --list-browsers
+
+icon:
+	swift Scripts/make-icon.swift

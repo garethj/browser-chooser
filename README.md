@@ -118,6 +118,7 @@ make install     # bundle + copy to /Applications + launch
 make test        # swift test
 make run         # bundle + run from build directory
 make list-browsers # bundle + print detected browsers/profiles as [[browsers]] TOML
+make icon        # redraw Resources/AppIcon.icns from Scripts/make-icon.swift
 make clean       # remove build artifacts
 ```
 
