@@ -26,17 +26,9 @@ cp "$PROJECT_DIR/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/"
 # Strip extended attributes that break codesign
 xattr -cr "$APP_BUNDLE"
 
-# Sign with the stable local identity if it exists (see Scripts/create-signing-cert.sh), so
-# macOS keeps privacy grants like Full Disk Access across rebuilds. Otherwise fall back to
-# ad-hoc signing, under which every build looks like a new app to macOS privacy settings.
-SIGN_IDENTITY="${SIGN_IDENTITY:-BrowserChooser Local Signing}"
-if security find-identity -p codesigning | grep -qF "\"$SIGN_IDENTITY\""; then
-    echo "==> Code signing with \"$SIGN_IDENTITY\"..."
-    codesign --force --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
-else
-    echo "==> Code signing ad-hoc (run Scripts/create-signing-cert.sh to keep Full Disk Access across rebuilds)..."
-    codesign --force --sign - "$APP_BUNDLE"
-fi
+# Ad-hoc codesign so macOS will run it
+echo "==> Code signing..."
+codesign --force --sign - "$APP_BUNDLE"
 
 echo "==> Built: $APP_BUNDLE"
 

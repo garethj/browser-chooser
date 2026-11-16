@@ -25,7 +25,7 @@ make install
 
 This builds the app, copies it to `/Applications`, installs a login item so it starts automatically at login, and launches it. Since macOS doesn't let apps set themselves as the default browser silently, it also opens **System Settings > Desktop & Dock** for you — pick BrowserChooser as your default web browser there.
 
-To detect browser profiles, BrowserChooser reads other browsers' data in `~/Library/Application Support`, which macOS may block without asking. If it does, the menu bar and window show a warning naming the affected browsers, and **Add Detected Browsers** skips them rather than guessing. To fix it, add `/Applications/BrowserChooser.app` under **System Settings > Privacy & Security > Full Disk Access**, then quit and reopen the app. If you build it yourself, run `make signing-cert` first so the grant survives rebuilds (see [Building](#building)). Routing to a configured profile works either way, since launching a browser with a profile doesn't need that access.
+To detect browser profiles, BrowserChooser reads other browsers' data in `~/Library/Application Support`, which macOS may block without asking. If it does, the menu bar and window show a warning naming the affected browsers, and **Add Detected Browsers** skips them rather than guessing. To fix it, add `/Applications/BrowserChooser.app` under **System Settings > Privacy & Security > Full Disk Access**, then quit and reopen the app. Routing to a configured profile works either way, since launching a browser with a profile doesn't need that access.
 
 ## Menu bar and window
 
@@ -120,14 +120,13 @@ make install     # bundle + copy to /Applications + launch
 make test        # swift test
 make run         # bundle + run from build directory
 make list-browsers # bundle + print detected browsers/profiles as [[browsers]] TOML
-make signing-cert # create a local code-signing certificate (once per Mac)
 make icon        # redraw Resources/AppIcon.icns from Scripts/make-icon.swift
 make clean       # remove build artifacts
 ```
 
 Build output goes to `~/Library/Caches/browser-chooser/build` rather than `.build` in the project, because this project lives in a Google Drive folder and Drive's sync damages SwiftPM's build directory. Set `BUILD_PATH` to put it somewhere else, e.g. `make install BUILD_PATH=/tmp/bc-build`.
 
-Run `make signing-cert` once on a new Mac before the first install. It creates a self-signed "BrowserChooser Local Signing" certificate in your login keychain, and `make bundle` signs with it whenever it's present. That keeps the app's identity stable, so macOS remembers Full Disk Access across rebuilds. Without it, builds are signed ad-hoc, every rebuild looks like a new app, and you have to grant Full Disk Access again after each install. Switching from ad-hoc to the certificate counts as one more change of identity, so grant access once more after the first signed install.
+Builds are signed ad-hoc, so macOS treats every rebuild as a new app and drops its Full Disk Access. After each `make install`, re-add BrowserChooser under Full Disk Access if the app shows the profile-access warning. (Signing with a self-signed certificate doesn't avoid this: macOS refuses Full Disk Access for such builds even when the certificate is trusted.)
 
 ## How it's built
 

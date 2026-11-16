@@ -1,4 +1,4 @@
-.PHONY: build bundle install clean run test list-browsers icon signing-cert
+.PHONY: build bundle install clean run test list-browsers icon
 
 # Build output lives outside the project: this folder syncs via Google Drive, which
 # mangles SwiftPM's .build directory (e.g. replacing .dSYM bundles with empty files).
@@ -30,6 +30,3 @@ list-browsers: bundle
 
 icon:
 	swift Scripts/make-icon.swift
-
-signing-cert:
-	bash Scripts/create-signing-cert.sh
