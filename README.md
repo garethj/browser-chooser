@@ -27,6 +27,12 @@ This builds the app, copies it to `/Applications`, installs a login item so it s
 
 To detect browser profiles, BrowserChooser reads other browsers' data in `~/Library/Application Support`, which macOS may block without asking. If it does, the menu bar and window show a warning naming the affected browsers, and **Add Detected Browsers** skips them rather than guessing. To fix it, add `/Applications/BrowserChooser.app` under **System Settings > Privacy & Security > Full Disk Access**, then quit and reopen the app. Routing to a configured profile works either way, since launching a browser with a profile doesn't need that access.
 
+If the warning stays even with Full Disk Access switched on, macOS's stored privacy decisions for the app may be stale, which can happen after several rebuilds or grant changes. Reset them, then remove and re-add the app under Full Disk Access and reopen it:
+
+```bash
+tccutil reset All com.garethj.BrowserChooser
+```
+
 ## Menu bar and window
 
 BrowserChooser runs in the background and shows a globe icon in the menu bar. The menu has the config actions (Open Config, Reload Config, Add Detected Browsers to Config) and lists any config errors or warnings.
