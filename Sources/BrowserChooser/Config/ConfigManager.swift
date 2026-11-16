@@ -60,9 +60,9 @@ final class ConfigManager {
         }
     }
 
-    /// Appends any detected browser (matched by bundle ID) not already referenced in the
-    /// config to the end of the file, leaving existing content untouched. Safe to call
-    /// repeatedly — already-referenced bundle IDs are skipped every time.
+    /// Appends any detected browser/profile not already referenced in the config to the end
+    /// of the file, leaving existing content untouched. Safe to call repeatedly — entries
+    /// already present (matched by bundle ID and profile) are skipped every time.
     func addDetectedBrowsers() {
         let file = Self.configFileURL
         guard FileManager.default.fileExists(atPath: file.path) else {
@@ -70,8 +70,7 @@ final class ConfigManager {
             return
         }
 
-        let existingIDs = Set(config.browsers.map(\.id))
-        let blocks = BrowserTOML.blocks(excludingBundleIDs: existingIDs)
+        let blocks = BrowserTOML.blocks(excluding: config.browsers)
         guard !blocks.isEmpty else {
             logger.info("No newly detected browsers to add")
             return

@@ -90,7 +90,7 @@ Browsers installed on your Mac are auto-detected, including their profiles — y
 make list-browsers
 ```
 
-to print detected browsers/profiles as `[[browsers]]` blocks without touching the file. Both skip anything whose bundle ID is already referenced in your config, so existing entries and rules are never touched.
+to print every detected browser/profile as `[[browsers]]` blocks without touching the file. **Add Detected Browsers** only appends browser/profile pairs that aren't already in your config, so a new profile of a browser you've already configured still gets added, and existing entries and rules are never touched. An entry with no `profile` counts as covering every profile of that browser.
 
 `profile` means different things depending on the browser family:
 
