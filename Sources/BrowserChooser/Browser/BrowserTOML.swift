@@ -9,10 +9,22 @@ enum BrowserTOML {
         profileDetector: ProfileDetector = ProfileDetector(),
         excluding existing: [BrowserConfig] = []
     ) -> [String] {
+        blocks(for: detector.detectBrowsers(), profileDetector: profileDetector, excluding: existing)
+    }
+
+    /// Browsers whose profiles can't be read are skipped entirely: their profile list is
+    /// unknown, and writing a profile-less entry would wrongly mark every profile as covered.
+    static func blocks(
+        for browsers: [DetectedBrowser],
+        profileDetector: ProfileDetector,
+        excluding existing: [BrowserConfig] = []
+    ) -> [String] {
         var blocks: [String] = []
 
-        for browser in detector.detectBrowsers() {
-            let profiles = profileDetector.profiles(forBundleID: browser.bundleID)
+        for browser in browsers {
+            guard case .found(let profiles) = profileDetector.lookup(forBundleID: browser.bundleID) else {
+                continue
+            }
 
             if profiles.isEmpty {
                 if !isConfigured(bundleID: browser.bundleID, profile: nil, in: existing) {

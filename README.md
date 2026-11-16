@@ -25,6 +25,8 @@ make install
 
 This builds the app, copies it to `/Applications`, installs a login item so it starts automatically at login, and launches it. Since macOS doesn't let apps set themselves as the default browser silently, it also opens **System Settings > Desktop & Dock** for you — pick BrowserChooser as your default web browser there.
 
+To detect browser profiles, BrowserChooser reads other browsers' data in `~/Library/Application Support`, which macOS may block without asking. If it does, the menu bar and window show a warning naming the affected browsers, and **Add Detected Browsers** skips them rather than guessing. To fix it, add `/Applications/BrowserChooser.app` under **System Settings > Privacy & Security > Full Disk Access**, then quit and reopen the app. Routing to a configured profile works either way, since launching a browser with a profile doesn't need that access.
+
 ## Menu bar and window
 
 BrowserChooser runs in the background and shows a globe icon in the menu bar. The menu has the config actions (Open Config, Reload Config, Add Detected Browsers to Config) and lists any config errors or warnings.

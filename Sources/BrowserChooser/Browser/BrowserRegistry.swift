@@ -62,9 +62,15 @@ final class BrowserRegistry {
     static func validationWarnings(
         config: AppConfig,
         knownBrowserNames: Set<String>,
-        profilesByBundleID: [String: [BrowserProfile]]
+        profilesByBundleID: [String: [BrowserProfile]],
+        unreadableProfileBrowsers: [String] = []
     ) -> [String] {
         var warnings: [String] = []
+
+        if !unreadableProfileBrowsers.isEmpty {
+            let names = unreadableProfileBrowsers.joined(separator: ", ")
+            warnings.append("macOS is blocking access to profiles for \(names), so they can't be detected or checked. Add BrowserChooser under System Settings → Privacy & Security → Full Disk Access, then reopen it.")
+        }
 
         for cb in config.browsers {
             guard let profile = cb.profile,

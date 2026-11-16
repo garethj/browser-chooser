@@ -61,12 +61,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         for cb in configManager.config.browsers where cb.profile != nil {
             profilesByBundleID[cb.id] = profileDetector.profiles(forBundleID: cb.id)
         }
+        let unreadable = BrowserDetector().detectBrowsers()
+            .filter { if case .accessDenied = profileDetector.lookup(forBundleID: $0.bundleID) { return true }; return false }
+            .map(\.name)
         let knownNames = Set(registry.browsers.map { $0.name.lowercased() })
         configManager.setWarnings(
             BrowserRegistry.validationWarnings(
                 config: configManager.config,
                 knownBrowserNames: knownNames,
-                profilesByBundleID: profilesByBundleID
+                profilesByBundleID: profilesByBundleID,
+                unreadableProfileBrowsers: unreadable
             )
         )
 

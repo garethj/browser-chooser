@@ -1,9 +1,22 @@
 import Foundation
 import os
 
-struct BrowserProfile {
+struct BrowserProfile: Equatable {
     let directory: String
     let displayName: String
+}
+
+/// Result of looking up a browser's profiles. `accessDenied` means the browser's data
+/// exists but couldn't be read — typically macOS privacy protection, fixed by granting
+/// BrowserChooser Full Disk Access — so the profile list is unknown, not empty.
+enum ProfileLookup: Equatable {
+    case found([BrowserProfile])
+    case accessDenied(path: String)
+
+    var profiles: [BrowserProfile] {
+        if case .found(let profiles) = self { return profiles }
+        return []
+    }
 }
 
 final class ProfileDetector {
@@ -26,49 +39,82 @@ final class ProfileDetector {
         "org.mozilla.nightly": "Firefox Nightly",
     ]
 
+    static let defaultAppSupportDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Library/Application Support")
+
+    /// Where browsers keep their data. Overridable so tests can point it at a temp folder.
+    let appSupportDirectory: URL
+
+    init(appSupportDirectory: URL = ProfileDetector.defaultAppSupportDirectory) {
+        self.appSupportDirectory = appSupportDirectory
+    }
+
     /// The `Profiles` directory for a Gecko-based browser, e.g.
     /// `~/Library/Application Support/Firefox/Profiles`. `nil` for non-Gecko bundle IDs.
     /// Exposed statically so `BrowserLauncher` can resolve `-profile <path>` without
     /// needing a `ProfileDetector` instance.
-    static func geckoProfilesDirectory(forBundleID bundleID: String) -> URL? {
+    static func geckoProfilesDirectory(
+        forBundleID bundleID: String,
+        in appSupport: URL = ProfileDetector.defaultAppSupportDirectory
+    ) -> URL? {
         guard let dirName = geckoBrowsers[bundleID] else { return nil }
-        return FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support")
+        return appSupport
             .appendingPathComponent(dirName)
             .appendingPathComponent("Profiles")
     }
 
+    /// Profiles for a browser, or `[]` if it has none or they can't be read.
+    /// Use `lookup(forBundleID:)` when "can't be read" needs telling apart from "none".
     func profiles(forBundleID bundleID: String) -> [BrowserProfile] {
+        lookup(forBundleID: bundleID).profiles
+    }
+
+    func lookup(forBundleID bundleID: String) -> ProfileLookup {
         if Self.chromiumBrowsers[bundleID] != nil {
             return chromiumProfiles(forBundleID: bundleID)
         }
         if Self.geckoBrowsers[bundleID] != nil {
             return geckoProfiles(forBundleID: bundleID)
         }
-        return []
+        return .found([])
     }
 
-    private func chromiumProfiles(forBundleID bundleID: String) -> [BrowserProfile] {
-        guard let dirName = Self.chromiumBrowsers[bundleID] else { return [] }
+    /// Whether a read failure means access was refused (e.g. macOS privacy protection
+    /// blocking another app's data), as opposed to the file simply not existing.
+    static func isAccessDenied(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        if nsError.domain == NSCocoaErrorDomain {
+            return nsError.code == NSFileReadNoPermissionError
+        }
+        if nsError.domain == NSPOSIXErrorDomain {
+            return nsError.code == Int(EPERM) || nsError.code == Int(EACCES)
+        }
+        return false
+    }
 
-        let appSupport = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support")
+    private func failure(_ error: Error, path: URL, bundleID: String) -> ProfileLookup {
+        logger.error("Can't read \(path.path, privacy: .public) for \(bundleID, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        return Self.isAccessDenied(error) ? .accessDenied(path: path.path) : .found([])
+    }
+
+    private func chromiumProfiles(forBundleID bundleID: String) -> ProfileLookup {
+        guard let dirName = Self.chromiumBrowsers[bundleID] else { return .found([]) }
+
+        let localState = appSupportDirectory
             .appendingPathComponent(dirName)
-
-        let localState = appSupport.appendingPathComponent("Local State")
+            .appendingPathComponent("Local State")
 
         let data: Data
         do {
             data = try Data(contentsOf: localState)
         } catch {
-            logger.error("Can't read \(localState.path, privacy: .public) for \(bundleID, privacy: .public): \(error.localizedDescription, privacy: .public)")
-            return []
+            return failure(error, path: localState, bundleID: bundleID)
         }
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let profileSection = json["profile"] as? [String: Any],
               let infoCache = profileSection["info_cache"] as? [String: Any] else {
-            return []
+            return .found([])
         }
 
         var profiles: [BrowserProfile] = []
@@ -80,11 +126,13 @@ final class ProfileDetector {
             logger.debug("Found profile '\(name)' (\(directory)) for \(bundleID)")
         }
 
-        return profiles.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+        return .found(profiles.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending })
     }
 
-    private func geckoProfiles(forBundleID bundleID: String) -> [BrowserProfile] {
-        guard let profilesDir = Self.geckoProfilesDirectory(forBundleID: bundleID) else { return [] }
+    private func geckoProfiles(forBundleID bundleID: String) -> ProfileLookup {
+        guard let profilesDir = Self.geckoProfilesDirectory(forBundleID: bundleID, in: appSupportDirectory) else {
+            return .found([])
+        }
 
         let profilesIni = profilesDir.deletingLastPathComponent().appendingPathComponent("profiles.ini")
         let names = (try? String(contentsOf: profilesIni, encoding: .utf8)).map(Self.parseProfilesIni) ?? [:]
@@ -95,8 +143,7 @@ final class ProfileDetector {
                 at: profilesDir, includingPropertiesForKeys: [.isDirectoryKey]
             )
         } catch {
-            logger.error("Can't list \(profilesDir.path, privacy: .public) for \(bundleID, privacy: .public): \(error.localizedDescription, privacy: .public)")
-            return []
+            return failure(error, path: profilesDir, bundleID: bundleID)
         }
 
         var profiles: [BrowserProfile] = []
@@ -112,7 +159,7 @@ final class ProfileDetector {
             logger.debug("Found profile '\(name)' (\(directory)) for \(bundleID)")
         }
 
-        return profiles.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+        return .found(profiles.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending })
     }
 
     /// Parses Firefox's `profiles.ini` format into `[folder name: display name]`.
