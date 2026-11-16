@@ -1,4 +1,4 @@
-.PHONY: build bundle install clean run test list-browsers icon
+.PHONY: build bundle install clean run test list-browsers icon signing-cert
 
 build:
 	swift build -c release
@@ -24,3 +24,6 @@ list-browsers: bundle
 
 icon:
 	swift Scripts/make-icon.swift
+
+signing-cert:
+	bash Scripts/create-signing-cert.sh
