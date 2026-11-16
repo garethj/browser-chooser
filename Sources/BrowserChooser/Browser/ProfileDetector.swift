@@ -57,8 +57,15 @@ final class ProfileDetector {
 
         let localState = appSupport.appendingPathComponent("Local State")
 
-        guard let data = try? Data(contentsOf: localState),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+        let data: Data
+        do {
+            data = try Data(contentsOf: localState)
+        } catch {
+            logger.error("Can't read \(localState.path, privacy: .public) for \(bundleID, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return []
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let profileSection = json["profile"] as? [String: Any],
               let infoCache = profileSection["info_cache"] as? [String: Any] else {
             return []
@@ -82,9 +89,13 @@ final class ProfileDetector {
         let profilesIni = profilesDir.deletingLastPathComponent().appendingPathComponent("profiles.ini")
         let names = (try? String(contentsOf: profilesIni, encoding: .utf8)).map(Self.parseProfilesIni) ?? [:]
 
-        guard let entries = try? FileManager.default.contentsOfDirectory(
-            at: profilesDir, includingPropertiesForKeys: [.isDirectoryKey]
-        ) else {
+        let entries: [URL]
+        do {
+            entries = try FileManager.default.contentsOfDirectory(
+                at: profilesDir, includingPropertiesForKeys: [.isDirectoryKey]
+            )
+        } catch {
+            logger.error("Can't list \(profilesDir.path, privacy: .public) for \(bundleID, privacy: .public): \(error.localizedDescription, privacy: .public)")
             return []
         }
 
