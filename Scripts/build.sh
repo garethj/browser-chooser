@@ -4,12 +4,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 APP_NAME="BrowserChooser"
-APP_BUNDLE="$PROJECT_DIR/.build/$APP_NAME.app"
+# Outside the project, which syncs via Google Drive (see Makefile). Override with BUILD_PATH.
+BUILD_PATH="${BUILD_PATH:-$HOME/Library/Caches/browser-chooser/build}"
+APP_BUNDLE="$BUILD_PATH/$APP_NAME.app"
 
 echo "==> Building $APP_NAME..."
 cd "$PROJECT_DIR"
-swift build -c release
-BUILD_DIR="$(swift build -c release --show-bin-path)"
+swift build -c release --scratch-path "$BUILD_PATH"
+BUILD_DIR="$(swift build -c release --scratch-path "$BUILD_PATH" --show-bin-path)"
 echo "==> Binary at: $BUILD_DIR/$APP_NAME"
 
 echo "==> Assembling $APP_NAME.app bundle..."

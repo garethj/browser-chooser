@@ -125,6 +125,8 @@ make icon        # redraw Resources/AppIcon.icns from Scripts/make-icon.swift
 make clean       # remove build artifacts
 ```
 
+Build output goes to `~/Library/Caches/browser-chooser/build` rather than `.build` in the project, because this project lives in a Google Drive folder and Drive's sync damages SwiftPM's build directory. Set `BUILD_PATH` to put it somewhere else, e.g. `make install BUILD_PATH=/tmp/bc-build`.
+
 Run `make signing-cert` once on a new Mac before the first install. It creates a self-signed "BrowserChooser Local Signing" certificate in your login keychain, and `make bundle` signs with it whenever it's present. That keeps the app's identity stable, so macOS remembers Full Disk Access across rebuilds. Without it, builds are signed ad-hoc, every rebuild looks like a new app, and you have to grant Full Disk Access again after each install. Switching from ad-hoc to the certificate counts as one more change of identity, so grant access once more after the first signed install.
 
 ## How it's built

@@ -4,7 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 APP_NAME="BrowserChooser"
-APP_BUNDLE="$PROJECT_DIR/.build/$APP_NAME.app"
+# Outside the project, which syncs via Google Drive (see Makefile). Override with BUILD_PATH.
+BUILD_PATH="${BUILD_PATH:-$HOME/Library/Caches/browser-chooser/build}"
+APP_BUNDLE="$BUILD_PATH/$APP_NAME.app"
 INSTALL_DIR="/Applications"
 LAUNCH_AGENT_LABEL="com.garethj.browserchooser"
 LAUNCH_AGENT_PLIST="$HOME/Library/LaunchAgents/$LAUNCH_AGENT_LABEL.plist"
