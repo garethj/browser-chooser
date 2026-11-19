@@ -64,6 +64,11 @@ name = "Firefox Personal"
 id = "org.mozilla.firefox"
 profile = "6eov930b.default-release"   # folder name under Firefox's Profiles/ dir
 
+[[browsers]]
+name = "Firefox Work"
+id = "org.mozilla.firefox"
+container = "Work"                     # Multi-Account Containers container name
+
 # Route multiple domains to the same browser in one rule
 [[rules]]
 patterns = [
@@ -91,6 +96,7 @@ The app watches this file and reloads automatically when you save changes. If a 
 | `name` | Yes | Display name, referenced in rules |
 | `id` | Yes | macOS bundle identifier (e.g. `com.apple.Safari`) |
 | `profile` | No | Profile identifier — meaning depends on the browser, see below |
+| `container` | No | Firefox only: the Multi-Account Containers container to open the link in, see below |
 
 Browsers installed on your Mac are auto-detected, including their profiles — you only need `[[browsers]]` entries to override names or scope rules to a specific profile. If you install a new browser (or create a new profile) later, pick **Add Detected Browsers to Config** from the menu bar dropdown or the app window to append its entry to your existing config, or run:
 
@@ -104,6 +110,8 @@ to print every detected browser/profile as `[[browsers]]` blocks without touchin
 
 - **Chromium** (Chrome, Brave, Edge, Vivaldi, Arc): the profile directory name, e.g. `"Default"`, `"Profile 1"` — read from the browser's `Local State` file.
 - **Firefox**: the profile's folder name under `~/Library/Application Support/Firefox/Profiles/`, e.g. `"6eov930b.default-release"` — find it with `ls ~/Library/Application\ Support/Firefox/Profiles/`, or omit `profile` and let auto-detection list your profiles by their display name in the menu bar picker. Profiles created via Firefox's newer multi-profile panel work too, but since they aren't registered in `profiles.ini`, BrowserChooser falls back to showing their folder name instead of the friendly name you gave them in Firefox.
+
+`container` opens the link in a Firefox [Multi-Account Containers](https://addons.mozilla.org/firefox/addon/multi-account-containers/) container, using the name exactly as it appears in Firefox (e.g. `"Work"`). Firefox has no command-line option for containers, so this also needs the [Open external links in a container](https://addons.mozilla.org/firefox/addon/open-url-in-container/) extension. BrowserChooser hands Firefox an `ext+container:name=Work&url=…` link, and the extension opens it in that container. The first time, Firefox or the extension may ask you to confirm. You can combine `container` with `profile` as long as the container exists in that profile. On a non-Firefox browser, `container` is ignored and shows a config warning.
 
 **`[[rules]]`** — evaluated top to bottom, first match wins:
 

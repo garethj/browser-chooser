@@ -22,7 +22,8 @@ final class BrowserRegistry {
                 name: cb.name,
                 bundleID: cb.id,
                 icon: icon,
-                profileDirectory: cb.profile
+                profileDirectory: cb.profile,
+                container: cb.container
             )
             result.append(browser)
             logger.debug("Added config browser: \(cb.name)")
@@ -80,6 +81,10 @@ final class BrowserRegistry {
 
             let available = profiles.map { "\($0.directory) (\($0.displayName))" }.joined(separator: ", ")
             warnings.append("Browser '\(cb.name)' references profile '\(profile)', which doesn't exist. Available profiles: \(available).")
+        }
+
+        for cb in config.browsers where cb.container != nil && !ProfileDetector.isGecko(bundleID: cb.id) {
+            warnings.append("Browser '\(cb.name)' sets container '\(cb.container!)', but containers only work with Firefox. The container will be ignored.")
         }
 
         if config.defaults.browser.lowercased() != "ask",

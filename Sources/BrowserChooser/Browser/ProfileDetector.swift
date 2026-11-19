@@ -39,6 +39,10 @@ final class ProfileDetector {
         "org.mozilla.nightly": "Firefox Nightly",
     ]
 
+    static func isGecko(bundleID: String) -> Bool {
+        geckoBrowsers[bundleID] != nil
+    }
+
     static let defaultAppSupportDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Application Support")
 

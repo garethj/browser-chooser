@@ -31,6 +31,9 @@ struct BrowserConfig: Codable, Equatable {
     var name: String
     var id: String
     var profile: String?
+    /// Firefox Multi-Account Containers container name. Needs the
+    /// "Open external links in a container" Firefox extension.
+    var container: String?
 }
 
 struct RuleConfig: Codable, Equatable {

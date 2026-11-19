@@ -4,10 +4,19 @@ import os
 final class BrowserLauncher {
     private let logger = Logger(subsystem: "com.garethj.BrowserChooser", category: "BrowserLauncher")
 
-    func launch(url: URL, browser: ResolvedBrowser) {
+    func launch(url originalURL: URL, browser: ResolvedBrowser) {
+        var url = originalURL
+        if let container = browser.container, ProfileDetector.isGecko(bundleID: browser.bundleID) {
+            if let wrapped = ContainerURL.wrap(originalURL, container: container) {
+                url = wrapped
+            } else {
+                logger.error("Couldn't build container link for \(container); opening without a container")
+            }
+        }
+
         guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: browser.bundleID) else {
             logger.error("Cannot find application for \(browser.bundleID)")
-            NSWorkspace.shared.open(url)
+            NSWorkspace.shared.open(originalURL)
             return
         }
 
@@ -32,7 +41,7 @@ final class BrowserLauncher {
                 logger.info("Opened \(url.absoluteString) in \(browser.name) via open -na")
             } catch {
                 logger.error("Failed to launch via open: \(error.localizedDescription)")
-                NSWorkspace.shared.open(url)
+                NSWorkspace.shared.open(originalURL)
             }
         } else {
             let config = NSWorkspace.OpenConfiguration()

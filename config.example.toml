@@ -40,6 +40,14 @@ name = "Firefox Personal"
 id = "org.mozilla.firefox"
 profile = "6eov930b.default-release"
 
+# Firefox Multi-Account Containers: "container" is the container's name as shown
+# in Firefox. Needs the "Open external links in a container" Firefox extension:
+#   https://addons.mozilla.org/firefox/addon/open-url-in-container/
+[[browsers]]
+name = "Firefox Work"
+id = "org.mozilla.firefox"
+container = "Work"
+
 # Rules are evaluated top-to-bottom; first match wins.
 # Patterns match against the URL host (or host+path if the pattern contains /).
 # Supports glob syntax: * (any chars), ? (one char), [abc] (character class).
